@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - exporter - ply</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="main.css">
+	</head>
+	<body>
+		<div id = "lentele" class="onTop" >
+			<div class="insideBackground">
+
+
+			<div style="display: inline"><select class="inputSelect" id="inputSelect">
+				<option
+				id="op1"
+				value="wood1"
+				>
+				Wood1
+				</option>
+				<option
+				id="op2"
+				value="wood2"
+				>
+				Wood2
+				<img src="textures/wood2.jpg">	
+				</option>
+			</select><div id="clearMat" style="color: black; display: inline; margin-left:20px">X</div></div>
+			<div class="result" style="color: black">dabar:<div id="result"></div></div>
+
+		</div>
+		</div>
+		<!-- <div id="info">
+			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - exporter - ply<br/><br/>
+			<button id="exportASCII">export ASCII</button> <button id="exportBinaryBigEndian">export binary (Big Endian)</button> <button id="exportBinaryLittleEndian">export binary (Little Endian)</button>
+		</div> -->
+
+		<script type="module">
+
+			import * as THREE from '../build/three.module.js';
+			import { OrbitControls } from './jsm/controls/OrbitControls.js';
+			import { PLYExporter } from './jsm/exporters/PLYExporter.js';
+			var object;
+			let scene, camera, renderer, exporter, mesh;
+			const raycaster = new THREE.Raycaster();
+			const mouse = new THREE.Vector2();
+			const pointer = new THREE.Vector2();
+			init();
+			animate();
+			
+			
+			function init() {
+			
+				
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 3000 );
+				camera.position.set( 150, 400, 300 );
+
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0xa0a0a0 );
+			
+
+				exporter = new PLYExporter();
+
+				//
+
+				const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
+				hemiLight.position.set( 0, 200, 0 );
+				scene.add( hemiLight );
+
+				const directionalLight = new THREE.DirectionalLight( 0xffffff );
+				directionalLight.position.set( 0, 400, 0 );
+				// directionalLight.castShadow = true;
+				// directionalLight.shadow.camera.top = 400;
+				// directionalLight.shadow.camera.bottom = -300;
+				// directionalLight.shadow.camera.left = 150;
+				// directionalLight.shadow.camera.right = 300;
+				scene.add( directionalLight );
+
+				// ground
+
+				const ground = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
+				ground.rotation.x = - Math.PI / 2;
+				ground.receiveShadow = true;
+				scene.add( ground );
+
+				const grid = new THREE.GridHelper( 2000, 20, 0x000000, 0x000000 );
+				grid.material.opacity = 0.2;
+				grid.material.transparent = true;
+				scene.add( grid );
+
+				// export mesh
+
+				const geometry = new THREE.BoxGeometry( 50, 50, 50 );
+				const loader = new THREE.CubeTextureLoader();
+				
+				// loader.setPath( 'textures/');
+				// const cubeTexture = loader.load(['wood1.jpg','wood1.jpg','wood1.jpg','wood1.jpg','wood1.jpg','wood1.jpg'])
+			
+
+				const texture = new THREE.TextureLoader().load( "textures/wood1.jpg" );
+
+
+
+
+
+
+
+				const material = new THREE.MeshFaceMaterial( { color: 0xffff00 } );
+				let edges = new THREE.EdgesGeometry( geometry );
+				let line = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: 0xffffff } ) );
+				let lineMat = new THREE.LineBasicMaterial( { color: 0x000000 } );
+				let points = [];
+				let lineBundle = new THREE.BufferGeometry().setFromPoints( points );
+				let line2 = new THREE.Line( lineBundle, lineMat );
+				//Kubai
+
+				// const geometry2 = new THREE.BoxGeometry( 50, 50, 50 );
+				// var cubeMaterials2=[
+				// 	new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
+				// 	new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
+				// 	new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
+				// 	new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
+				// 	new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
+				// 	new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
+				// ]
+				// const materialCube2 = new THREE.MeshFaceMaterial( cubeMaterials2 );
+
+				// mesh = new THREE.Mesh( geometry2, cubeMaterials2 );
+				// mesh.position.x = -250;
+				// mesh.castShadow = true;
+				// mesh.position.y = 30;
+				// scene.add(mesh)
+
+				//Meterials
+				var cubeMaterials1=[
+					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
+					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
+					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
+					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
+					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
+					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
+				]
+
+				var cubeMaterials2=[
+					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood2.jpg'),side: THREE.DoubleSide}),
+					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood2.jpg'),side: THREE.DoubleSide}),
+					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood2.jpg'),side: THREE.DoubleSide}),
+					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood2.jpg'),side: THREE.DoubleSide}),
+					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood2.jpg'),side: THREE.DoubleSide}),
+					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood2.jpg'),side: THREE.DoubleSide}),
+				]
+
+				var cubeMaterial3 = new THREE.MeshBasicMaterial({color: 0xffffff})
+				//Apatinės lentynos
+
+				for (let h = 0; h <= 200; h=h+50)
+				{
+					
+				const materialCube = new THREE.MeshFaceMaterial( cubeMaterials1 );
+
+					mesh = new THREE.Mesh( geometry.clone(), cubeMaterial3 );
+					mesh.material.transparent = true;
+					mesh.material.opacity = 0.4;
+					mesh.position.x = h;
+					mesh.castShadow = true;
+					mesh.position.y = 25;
+					scene.add( mesh );
+					edges = new THREE.EdgesGeometry( geometry );
+					line = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: 0x000000 } ) );
+					line.position.x= h;
+					line.position.y= 25;
+					scene.add( line );
+					points = [];
+					points.push( new THREE.Vector3( h-7, 25, 0 ) );
+					points.push( new THREE.Vector3( h+7, 25, 0 ) );
+					points.push( new THREE.Vector3( h, 25, 0 ) );
+					points.push( new THREE.Vector3( h, 32, 0 ) );
+					points.push( new THREE.Vector3( h, 18, 0 ) );
+					//points.push( new THREE.Vector3( h, 25, 0 ) );
+					//points.push( new THREE.Vector3( h, 25, 7 ) );
+					//points.push( new THREE.Vector3( h, 25, -7 ) );
+					lineBundle = new THREE.BufferGeometry().setFromPoints( points );
+					line2 = new THREE.Line( lineBundle, lineMat );
+					scene.add( line2 );
+
+				}
+				//siena1
+				var meshsiena = new THREE.Mesh(  new THREE.BoxGeometry( 450, 300, 50 ), new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/siena.jfif'),side: THREE.DoubleSide}) );
+
+				meshsiena.position.x = 50;
+				meshsiena.position.z= -50;
+				meshsiena.castShadow = true;
+				meshsiena.position.y = 25;
+				meshsiena.name = "siena"
+				scene.add( meshsiena );
+
+				meshsiena = new THREE.Mesh(  new THREE.BoxGeometry( 85, 300, 500 ), new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/siena.jfif'),side: THREE.DoubleSide}) );
+	
+				meshsiena.position.x = -70;
+				meshsiena.position.z= 0;
+				meshsiena.castShadow = true;
+				meshsiena.position.y = 25;
+				meshsiena.name="siena"
+				scene.add( meshsiena );
+				//lubos
+				meshsiena = new THREE.Mesh(  new THREE.BoxGeometry( 500, 0, 500 ), new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/siena.jfif'),side: THREE.DoubleSide}) );
+	
+				meshsiena.position.x = 25;
+				meshsiena.position.z= 0;
+				meshsiena.castShadow = true;
+				meshsiena.position.y = 175;
+				meshsiena.name="siena"
+				scene.add( meshsiena );
+				//grindys
+				const textureFloor = new THREE.TextureLoader().load( "textures/floor.jpg" );
+				textureFloor.wrapS = THREE.RepeatWrapping;
+				textureFloor.wrapT = THREE.RepeatWrapping;
+				textureFloor.repeat.set( 10, 6 );
+				mesh = new THREE.Mesh(  new THREE.BoxGeometry( 550, 50, 550 ), new THREE.MeshBasicMaterial({map: textureFloor,side: THREE.DoubleSide}) );
+
+				mesh.name = "grindys"
+				mesh.position.x = 0;
+				mesh.position.z= 0;
+				mesh.castShadow = true;
+				mesh.position.y = -25;
+				scene.add( mesh );
+			
+  					var selectedObject;
+
+
+			
+
+
+				const geometry1 = new THREE.BoxGeometry( 50, 100, 50 );
+				
+				const material1 = new THREE.MeshPhongMaterial( { color: 0x00ff00 } );
+
+
+				//Šaldytuvas
+				edges = new THREE.EdgesGeometry( geometry1 );
+				line = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: 0x000000 } ) );
+				line.position.x= 250;
+				line.position.y= 50;
+				scene.add( line );
+
+				
+				//Viršutinės lentynos
+				for (let h = 0; h < 250; h=h+50)
+				{
+					mesh = new THREE.Mesh( geometry, cubeMaterial3 );
+					mesh.position.x = h;
+					mesh.castShadow = true;
+					mesh.position.y = 125;
+					scene.add( mesh );
+					edges = new THREE.EdgesGeometry( geometry );
+					line = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: 0x000000 } ) );
+					line.position.x= h;
+					line.position.y= 125;
+					scene.add( line );
+					points = [];
+					points.push( new THREE.Vector3( h-7, 125, 0 ) );
+					points.push( new THREE.Vector3( h+7, 125, 0 ) );
+					points.push( new THREE.Vector3( h, 125, 0 ) );
+					points.push( new THREE.Vector3( h, 132, 0 ) );
+					points.push( new THREE.Vector3( h, 118, 0 ) );
+					//points.push( new THREE.Vector3( h, 25, 0 ) );
+					//points.push( new THREE.Vector3( h, 25, 7 ) );
+					//points.push( new THREE.Vector3( h, 25, -7 ) );
+					lineBundle = new THREE.BufferGeometry().setFromPoints( points );
+					line2 = new THREE.Line( lineBundle, lineMat );
+					scene.add( line2 );
+				}
+				
+
+
+
+
+				function onPointerMove( event ) { // ONCLICKAS
+
+				//const materialCube = new THREE.MeshFaceMaterial( cubeMaterials );
+
+					raycaster.setFromCamera( mouse, camera );
+
+					// calculate objects intersecting the picking ray
+					const intersects = raycaster.intersectObjects( scene.children );
+
+					//for ( let i = 0; i <script intersects.length; i ++ ) {
+						var element = document.getElementById("result")
+						console.log(intersects)
+						if (intersects[0].object.name != "siena" && intersects[0].object.name != "grindys")
+
+				{
+
+						if(intersects[0].object.id!=10){
+						
+						try{var array = intersects[ 0 ].object.material[0].map.image.src.split('/');
+
+						array = array[array.length-1];
+						
+						object = intersects[ 0 ].object;
+						selectedObject = object.id;
+						console.log(object.id)
+						element.textContent = array.substring(0, array.length-4);
+						if (array.substring(0, array.length-4) != " "){
+							document.getElementById('inputSelect').value = array.substring(0, array.length-4);
+						}
+						
+						}
+
+						catch(e) {
+							object = intersects[ 0 ].object;
+							selectedObject = object.id;
+							document.getElementById('inputSelect').value = "nothing";
+						}
+						}
+					}
+						// e.color.set( 0xff0000 )
+
+						// e.map.image.src = "http://127.0.0.1:5500/three.js/examples/textures/wood2.jpg"
+						// e.map.image.currentSrc = "http://127.0.0.1:5500/three.js/examples/textures/wood2.jpg"
+						
+						
+						
+						// 
+
+					//}
+				pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+				}
+			
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.shadowMap.enabled = true;
+				document.body.appendChild( renderer.domElement );
+
+				//
+
+				const controls = new OrbitControls( camera, renderer.domElement );
+				controls.target.set( 0, 25, 0 );
+				controls.update();
+
+				//
+
+				//STATS
+				//Events
+				var clearX = document.getElementById("clearMat");
+				clearX.addEventListener( 'click', clearMat );
+				document.addEventListener( 'click', onPointerMove );
+				window.addEventListener( 'resize', onWindowResize );
+				//OnChange eventas
+				const selectElement = document.querySelector('.inputSelect');
+
+				function clearMat( event ) {
+				var objektas = scene.getObjectById(selectedObject,true);
+				mesh = new THREE.Mesh( geometry, cubeMaterial3 );
+				mesh.position.set(objektas.position.x, objektas.position.y, objektas.position.z)
+				//copy geo
+				scene.remove(objektas)
+				scene.add( mesh );
+				selectedObject = mesh.id;
+				render()
+				}
+
+
+				selectElement.addEventListener('change', (event) => {
+				
+				var objektas = scene.getObjectById(selectedObject,true);
+				
+				const geometry1 = new THREE.BoxGeometry( 50,50,50 );
+				if (objektas.name != "siena" && objektas.name != "grindys")
+				{
+				
+			
+				if(event.target.value=="wood1") {
+				console.log(objektas)
+				mesh = new THREE.Mesh( geometry1, cubeMaterials1 );
+				mesh.position.set(objektas.position.x, objektas.position.y, objektas.position.z)
+				//copy geo
+
+				scene.remove(objektas)
+				scene.add( mesh );
+				selectedObject = mesh.id;
+				render()
+				}
+				else if(event.target.value=="wood2") {
+				mesh = new THREE.Mesh( geometry1, cubeMaterials2 );
+				mesh.position.set(objektas.position.x, objektas.position.y, objektas.position.z)
+				//copy geo
+				scene.remove(objektas)
+				scene.add( mesh );
+				selectedObject = mesh.id;
+				render()
+				}
+			}
+				//const result = document.querySelector('.result');
+				//result.textContent = event.target.value;
+			
+				});
+				
+				// const buttonExportASCII = document.getElementById( 'exportASCII' );
+				// buttonExportASCII.addEventListener( 'click', exportASCII );
+
+				// const buttonExportBinaryBE = document.getElementById( 'exportBinaryBigEndian' );
+				// buttonExportBinaryBE.addEventListener( 'click', exportBinaryBigEndian );
+
+				// const buttonExportBinaryLE = document.getElementById( 'exportBinaryLittleEndian' );
+				// buttonExportBinaryLE.addEventListener( 'click', exportBinaryLittleEndian );
+
+
+			}
+			
+				
+				//
+
+
+			
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			
+			}
+
+			function onMouseMove( event ) {
+
+				// calculate mouse position in normalized device coordinates
+				// (-1 to +1) for both components
+
+				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+				}
+
+			window.addEventListener( 'mousemove', onMouseMove, false );
+
+			
+			function animate() {
+
+				requestAnimationFrame( animate );
+				
+				render()
+			}
+
+
+
+
+			function render(){
+				
+				
+
+				renderer.render( scene, camera );
+
+				// raycaster.setFromCamera( pointer, camera );
+				// const intersects = raycaster.intersectObjects( scene.children, false );
+				// let INTERSECTED;
+				
+				// if ( intersects.length > 0 ) {
+
+				// 	if ( INTERSECTED != intersects[ 0 ].object ) {
+
+				// 		if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+
+				// 		INTERSECTED = intersects[ 0 ].object;
+				// 		// INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+				// 		//INTERSECTED.material.color.setHex( 0xffff00 );
+
+				// 	}
+
+				// } else {
+
+				// 	if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+
+				// 	INTERSECTED = null;
+
+				// }
+				renderer.render( scene, camera );
+			}
+
+			function exportASCII() {
+
+				exporter.parse( mesh, function ( result ) {
+
+					saveString( result, 'box.ply' );
+
+				} );
+
+			}
+
+			function exportBinaryBigEndian() {
+
+				exporter.parse( mesh, function ( result ) {
+
+					saveArrayBuffer( result, 'box.ply' );
+
+				}, { binary: true } );
+
+			}
+
+			function exportBinaryLittleEndian() {
+
+				exporter.parse( mesh, function ( result ) {
+
+					saveArrayBuffer( result, 'box.ply' );
+
+				}, { binary: true, littleEndian: true } );
+
+			}
+
+			const link = document.createElement( 'a' );
+			link.style.display = 'none';
+			document.body.appendChild( link );
+
+			function save( blob, filename ) {
+
+				link.href = URL.createObjectURL( blob );
+				link.download = filename;
+				link.click();
+
+			}
+
+			function saveString( text, filename ) {
+
+				save( new Blob( [ text ], { type: 'text/plain' } ), filename );
+
+			}
+
+			function saveArrayBuffer( buffer, filename ) {
+
+				save( new Blob( [ buffer ], { type: 'application/octet-stream' } ), filename );
+
+			}
+			
+		</script>
+
+	</body>
+</html>
