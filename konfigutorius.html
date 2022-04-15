@@ -1,542 +1,1385 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<title>three.js webgl - exporter - ply</title>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<link type="text/css" rel="stylesheet" href="main.css">
-	</head>
-	<body>
-		<div id = "lentele" class="onTop" >
-			<div class="insideBackground">
 
+<head>
+	<title>three.js webgl - exporter - ply</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link type="text/css" rel="stylesheet" href="main.css">
+</head>
 
-			<div style="display: inline"><select class="inputSelect" id="inputSelect">
-				<option
-				id="op1"
-				value="wood1"
-				>
-				Wood1
-				</option>
-				<option
-				id="op2"
-				value="wood2"
-				>
-				Wood2
-				<img src="textures/wood2.jpg">	
-				</option>
-			</select><div id="clearMat" style="color: black; display: inline; margin-left:20px">X</div></div>
-			<div class="result" style="color: black">dabar:<div id="result"></div></div>
+<body>
+	<div class="header">
+		<div class="imageHeader">
 
 		</div>
+		<div
+			style="margin-top:-30px;position:absolute;margin-left:45%;color:black;font-weight:500;font-size:20px;font-family: Inter;">
+
+
+			<img style="display:inline;margin-top:20px" src="./Vector.svg" </img>
+			<h3 style="display:inline;margin-left:15px">
+				Virtuvės elementai
+			</h3>
 		</div>
-		<!-- <div id="info">
+	</div>
+	<div id=" lentele" class="onTop">
+		<div class="lenteleHead">
+			<p class="lenteleHeadtext"> Virtuvės tipas</p>
+
+		</div>
+		<div class="insideBackground">
+
+
+			<div style="display: inline">
+				<select value="Pasirinkite..." class="inputSelect" id="inputSelect">
+					<option>Pasirinkite...</option>
+				</select>
+				<select class="inputSelect" id="inputSelectMaterial" style="margin-top: 12px">
+					<option id="op1" value="wood1">
+						Materija 1
+						<img src="textures/wood1.jpg" />
+					</option>
+					<option id="op2" value="wood2">
+						Materija 2
+						<img src="textures/wood2.jpg" />
+					</option>
+				</select>
+				<div id="clearMat" style="color: black; display: inline; margin-left:20px">X</div>
+			</div>
+			<div class="result" style="color: black">dabar:<div id="result"></div>
+			</div>
+
+		</div>
+		<label>Ilgis</label>
+		<input />
+	</div>
+	<!-- <div id="info">
 			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - exporter - ply<br/><br/>
 			<button id="exportASCII">export ASCII</button> <button id="exportBinaryBigEndian">export binary (Big Endian)</button> <button id="exportBinaryLittleEndian">export binary (Little Endian)</button>
 		</div> -->
 
-		<script type="module">
+	<script type="module">
 
-			import * as THREE from '../build/three.module.js';
-			import { OrbitControls } from './jsm/controls/OrbitControls.js';
-			import { PLYExporter } from './jsm/exporters/PLYExporter.js';
-			var object;
-			let scene, camera, renderer, exporter, mesh;
-			const raycaster = new THREE.Raycaster();
-			const mouse = new THREE.Vector2();
-			const pointer = new THREE.Vector2();
-			init();
-			animate();
-			
-			
-			function init() {
-			
-				
-				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 3000 );
-				camera.position.set( 150, 400, 300 );
+		import * as THREE from '../build/three.module.js';
+		import { OrbitControls } from './jsm/controls/OrbitControls.js';
+		import { PLYExporter } from './jsm/exporters/PLYExporter.js';
 
-				scene = new THREE.Scene();
-				scene.background = new THREE.Color( 0xa0a0a0 );
-			
+		//LOADER------------------
+		import { GLTFLoader } from './jsm/loaders/GLTFLoader.js';
+		import { DRACOLoader } from './jsm/loaders/DRACOLoader.js';
+		const loader = new GLTFLoader();
+		const dracoLoader = new DRACOLoader();
+		dracoLoader.setDecoderPath('/examples/js/libs/draco/');
+		loader.setDRACOLoader(dracoLoader);
+		// loader.load(
+		// 	// resource URL
+		// 	'/49173_VAF_D/PERSP.glb',
+		// 	// called when the resource is loaded
+		// 	function (gltf) {
 
-				exporter = new PLYExporter();
+		// 		scene.add(gltf.scene);
 
-				//
+		// 		gltf.animations; // Array<THREE.AnimationClip>
+		// 		gltf.scene; // THREE.Group
+		// 		gltf.scenes; // Array<THREE.Group>
+		// 		gltf.cameras; // Array<THREE.Camera>
+		// 		gltf.asset; // Object
+		// 		gltf.scene.scale.set(60, 50, 50)
+		// 		gltf.scene.rotation.x -= 1.57
+		// 		gltf.scene.position.z = 610;
+		// 		gltf.scene.position.y = 1000;
+		// 		gltf.scene.position.x = 50;
+		// 	},
+		// 	// called while loading is progressing
+		// 	function (xhr) {
 
-				const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
-				hemiLight.position.set( 0, 200, 0 );
-				scene.add( hemiLight );
+		// 		console.log((xhr.loaded / xhr.total * 100) + '% loaded');
 
-				const directionalLight = new THREE.DirectionalLight( 0xffffff );
-				directionalLight.position.set( 0, 400, 0 );
-				// directionalLight.castShadow = true;
-				// directionalLight.shadow.camera.top = 400;
-				// directionalLight.shadow.camera.bottom = -300;
-				// directionalLight.shadow.camera.left = 150;
-				// directionalLight.shadow.camera.right = 300;
-				scene.add( directionalLight );
+		// 	},
+		// 	// called when loading has errors
+		// 	function (error) {
 
-				// ground
+		// 		console.log('An error happened');
 
-				const ground = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
-				ground.rotation.x = - Math.PI / 2;
-				ground.receiveShadow = true;
-				scene.add( ground );
+		// 	}
+		// );
+		// loader.load(
+		// 	// resource URL
+		// 	'./import.glb',
+		// 	// called when the resource is loaded
+		// 	function (gltf) {
 
-				const grid = new THREE.GridHelper( 2000, 20, 0x000000, 0x000000 );
-				grid.material.opacity = 0.2;
-				grid.material.transparent = true;
-				scene.add( grid );
-
-				// export mesh
-
-				const geometry = new THREE.BoxGeometry( 50, 50, 50 );
-				const loader = new THREE.CubeTextureLoader();
-				
-				// loader.setPath( 'textures/');
-				// const cubeTexture = loader.load(['wood1.jpg','wood1.jpg','wood1.jpg','wood1.jpg','wood1.jpg','wood1.jpg'])
-			
-
-				const texture = new THREE.TextureLoader().load( "textures/wood1.jpg" );
+		// 		scene.add(gltf.scene);
+		// 		gltf.scene.scale.set(2000, 2000, 2000)
+		// 		gltf.animations; // Array<THREE.AnimationClip>
+		// 		gltf.scene; // THREE.Group
+		// 		gltf.scenes; // Array<THREE.Group>
+		// 		gltf.cameras; // Array<THREE.Camera>
+		// 		gltf.asset; // Object
 
 
+		// 		gltf.scene.position.z = 0;
+		// 		gltf.scene.position.y = 500;
+		// 		gltf.scene.position.x = 0;
+		// 		console.log("SCENA IMPORTUI TESTAS--------")
+		// 		console.log(gltf.scene)
+		// 	},
+		// 	// called while loading is progressing
+		// 	function (xhr) {
+
+		// 		console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+		// 	},
+		// 	// called when loading has errors
+		// 	function (error) {
+
+		// 		console.log('An error happened');
+
+		// 	}
+		// );
+
+		// //saldytuvas
+		// loader.load(
+		// 	// resource URL
+		// 	'./49153_VUS_2D_K.glb',
+		// 	// called when the resource is loaded
+		// 	function (gltf) {
+
+		// 		scene.add(gltf.scene);
+
+		// 		gltf.animations; // Array<THREE.AnimationClip>
+		// 		gltf.scene; // THREE.Group
+		// 		gltf.scenes; // Array<THREE.Group>
+		// 		gltf.cameras; // Array<THREE.Camera>
+		// 		gltf.asset; // Object
+		// 		gltf.scene.scale.set(100, 80, 69)
+		// 		gltf.scene.rotation.x -= 1.57
+		// 		gltf.scene.position.z = 610;
+		// 		gltf.scene.position.y = 0;
+		// 		gltf.scene.position.x = 186;
+		// 		console.log("SALDYTUVO DUOMENYS")
+		// 		console.log(gltf.scene)
+		// 	},
+		// 	// called while loading is progressing
+		// 	function (xhr) {
+
+		// 		console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+		// 	},
+		// 	// called when loading has errors
+		// 	function (error) {
+
+		// 		console.log('An error happened');
+
+		// 	}
+		// );
+		// loader.load(
+		// 	// resource URL
+		// 	'/49165_VAP_D_K/PERSP.glb',
+		// 	// called when the resource is loaded
+		// 	function (gltf) {
+
+		// 		scene.add(gltf.scene);
+
+		// 		gltf.animations; // Array<THREE.AnimationClip>
+		// 		gltf.scene; // THREE.Group
+		// 		gltf.scenes; // Array<THREE.Group>
+		// 		gltf.cameras; // Array<THREE.Camera>
+		// 		gltf.asset; // Object
+		// 		gltf.scene.scale.set(80, 80, 69)
+		// 		gltf.scene.rotation.x -= 1.57
+		// 		gltf.scene.position.z = 607;
+		// 		gltf.scene.position.y = 0;
+		// 		gltf.scene.position.x = 83;
+		// 	},
+		// 	// called while loading is progressing
+		// 	function (xhr) {
+
+		// 		console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+		// 	},
+		// 	// called when loading has errors
+		// 	function (error) {
+
+		// 		console.log('An error happened');
+
+		// 	}
+		// );
+		// //apatine spitnele be virsaus
+		// loader.load(
+		// 	// resource URL
+		// 	'/49175_VAS_3X_Hettich/PERSP.glb',
+		// 	// called when the resource is loaded
+		// 	function (gltf) {
+
+		// 		scene.add(gltf.scene);
+
+		// 		gltf.animations; // Array<THREE.AnimationClip>
+		// 		gltf.scene; // THREE.Group
+		// 		gltf.scenes; // Array<THREE.Group>
+		// 		gltf.cameras; // Array<THREE.Camera>
+		// 		gltf.asset; // Object
+		// 		gltf.scene.scale.set(90, 100, 70)
+		// 		gltf.scene.rotation.x -= 1.57
+		// 		gltf.scene.position.x = -138;
+		// 		gltf.scene.position.z = 751;
+		// 		gltf.scene.position.y = 0;
+		// 	},
+		// 	// called while loading is progressing
+		// 	function (xhr) {
+
+		// 		console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+		// 	},
+		// 	// called when loading has errors
+		// 	function (error) {
+
+		// 		console.log('An error happened');
+
+		// 	}
+		// );
+		//full kitchen
+		var object_list;
+
+
+		var select = document.getElementById('inputSelect');
+
+		loader.load(
+			// resource URL
+			'/3d_models/kitch.glb',
+			// called when the resource is loaded
+			function (gltf) {
+
+				scene.add(gltf.scene);
+				object_list = gltf.scene.children[0].children
+				gltf.animations; // Array<THREE.AnimationClip>
+				gltf.scene; // THREE.Group
+				gltf.scenes; // Array<THREE.Group>
+				gltf.cameras; // Array<THREE.Camera>
+				gltf.asset; // Object
+				gltf.scene.scale.set(90, 100, 70)
+				// gltf.scene.rotation.x -= 1.57
+				gltf.scene.position.x = 0;
+				gltf.scene.position.z = 0;
+				gltf.scene.position.y = 0;
+				gltf.scene.children[0].children.forEach(element => {
+
+					var opt = document.createElement('option');
+					opt.value = element.name;
+					opt.innerHTML = element.name;
+					select.appendChild(opt);
+
+
+
+
+				})
+			},
+			// called while loading is progressing
+			function (xhr) {
+
+				console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+			},
+			// called when loading has errors
+			function (error) {
+
+				console.log('An error happened');
+
+			}
+		);
+
+		// loader.load(
+		// 	// resource URL
+		// 	'/49187_VAO_600_GuoliniaiB/PERSP.glb',
+		// 	// called when the resource is loaded
+		// 	function (gltf) {
+
+		// 		scene.add(gltf.scene);
+
+		// 		gltf.animations; // Array<THREE.AnimationClip>
+		// 		gltf.scene; // THREE.Group
+		// 		gltf.scenes; // Array<THREE.Group>
+		// 		gltf.cameras; // Array<THREE.Camera>
+		// 		gltf.asset; // Object
+		// 		gltf.scene.scale.set(60, 50, 50)
+		// 		gltf.scene.rotation.x -= 1.57
+		// 		gltf.scene.position.z = 610;
+		// 		gltf.scene.position.y = 1000;
+		// 		gltf.scene.position.x = -200;
+		// 	},
+		// 	// called while loading is progressing
+		// 	function (xhr) {
+
+		// 		console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+		// 	},
+		// 	// called when loading has errors
+		// 	function (error) {
+
+		// 		console.log('An error happened');
+
+		// 	}
+		// );
+		// loader.load(
+		// 	// resource URL
+		// 	'/49173_VAF_D/PERSP.glb',
+		// 	// called when the resource is loaded
+		// 	function (gltf) {
+
+		// 		scene.add(gltf.scene);
+
+		// 		gltf.animations; // Array<THREE.AnimationClip>
+		// 		gltf.scene; // THREE.Group
+		// 		gltf.scenes; // Array<THREE.Group>
+		// 		gltf.cameras; // Array<THREE.Camera>
+		// 		gltf.asset; // Object
+		// 		gltf.scene.scale.set(60, 50, 50)
+		// 		gltf.scene.rotation.x -= 1.57
+		// 		gltf.scene.position.z = 610;
+		// 		gltf.scene.position.y = 1000;
+		// 		gltf.scene.position.x = 50;
+		// 	},
+		// 	// called while loading is progressing
+		// 	function (xhr) {
+
+		// 		console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+		// 	},
+		// 	// called when loading has errors
+		// 	function (error) {
+
+		// 		console.log('An error happened');
+
+		// 	}
+		// );
+		// loader.load(
+		// 	// resource URL
+		// 	'/49202_Oven_06/PERSP.glb',
+		// 	// called when the resource is loaded
+		// 	function (gltf) {
+
+		// 		scene.add(gltf.scene);
+
+		// 		gltf.animations; // Array<THREE.AnimationClip>
+		// 		gltf.scene; // THREE.Group
+		// 		gltf.scenes; // Array<THREE.Group>
+		// 		gltf.cameras; // Array<THREE.Camera>
+		// 		gltf.asset; // Object
+		// 		gltf.scene.scale.set(60, 50, 50)
+		// 		gltf.scene.rotation.x -= 1.57
+		// 		gltf.scene.position.z = 610;
+		// 		gltf.scene.position.y = 1000;
+		// 		gltf.scene.position.x = 150;
+		// 	},
+		// 	// called while loading is progressing
+		// 	function (xhr) {
+
+		// 		console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+		// 	},
+		// 	// called when loading has errors
+		// 	function (error) {
+
+		// 		console.log('An error happened');
+
+		// 	}
+		// );
+		// loader.load(
+		// 	// resource URL
+		// 	'/49204_VVL_2DU_IF/PERSP.glb',
+		// 	// called when the resource is loaded
+		// 	function (gltf) {
+
+		// 		scene.add(gltf.scene);
+
+		// 		gltf.animations; // Array<THREE.AnimationClip>
+		// 		gltf.scene; // THREE.Group
+		// 		gltf.scenes; // Array<THREE.Group>
+		// 		gltf.cameras; // Array<THREE.Camera>
+		// 		gltf.asset; // Object
+		// 		gltf.scene.scale.set(60, 50, 50)
+		// 		gltf.scene.rotation.x -= 1.57
+		// 		gltf.scene.position.z = 610;
+		// 		gltf.scene.position.y = 1000;
+		// 		gltf.scene.position.x = 250;
+		// 	},
+		// 	// called while loading is progressing
+		// 	function (xhr) {
+
+		// 		console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+		// 	},
+		// 	// called when loading has errors
+		// 	function (error) {
+
+		// 		console.log('An error happened');
+
+		// 	}
+		// );
+		// loader.load(
+		// 	// resource URL
+		// 	'/49212_VVGD2_DU_IF_D/PERSP.glb',
+		// 	// called when the resource is loaded
+		// 	function (gltf) {
+
+		// 		scene.add(gltf.scene);
+
+		// 		gltf.animations; // Array<THREE.AnimationClip>
+		// 		gltf.scene; // THREE.Group
+		// 		gltf.scenes; // Array<THREE.Group>
+		// 		gltf.cameras; // Array<THREE.Camera>
+		// 		gltf.asset; // Object
+		// 		gltf.scene.scale.set(90, 120, 70)
+		// 		gltf.scene.rotation.x -= 1.57
+		// 		gltf.scene.position.x = -143;
+		// 		gltf.scene.position.z = 926;
+		// 		gltf.scene.position.y = 5;
+		// 	},
+		// 	// called while loading is progressing
+		// 	function (xhr) {
+
+		// 		console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+		// 	},
+		// 	// called when loading has errors
+		// 	function (error) {
+
+		// 		console.log('An error happened');
+
+		// 	}
+		// );
+
+
+		// loader.load(
+		// 	// resource URL
+		// 	'/49214_VVL_2DU_IF/PERSP.glb',
+		// 	// called when the resource is loaded
+		// 	function (gltf) {
+
+		// 		scene.add(gltf.scene);
+
+		// 		gltf.animations; // Array<THREE.AnimationClip>
+		// 		gltf.scene; // THREE.Group
+		// 		gltf.scenes; // Array<THREE.Group>
+		// 		gltf.cameras; // Array<THREE.Camera>
+		// 		gltf.asset; // Object
+		// 		gltf.scene.scale.set(85, 120, 70)
+		// 		gltf.scene.rotation.x -= 1.57
+		// 		gltf.scene.position.x = -126;
+		// 		gltf.scene.position.z = 926;
+		// 		gltf.scene.position.y = 5;
+		// 	},
+		// 	// called while loading is progressing
+		// 	function (xhr) {
+
+		// 		console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+		// 	},
+		// 	// called when loading has errors
+		// 	function (error) {
+
+		// 		console.log('An error happened');
+
+		// 	}
+		// );
+		// //virsutine spintele
+		// loader.load(
+		// 	// resource URL
+		// 	'/49215_VVL_2DU_IF/PERSP.glb',
+		// 	// called when the resource is loaded
+		// 	function (gltf) {
+
+		// 		scene.add(gltf.scene);
+
+		// 		gltf.animations; // Array<THREE.AnimationClip>
+		// 		gltf.scene; // THREE.Group
+		// 		gltf.scenes; // Array<THREE.Group>
+		// 		gltf.cameras; // Array<THREE.Camera>
+		// 		gltf.asset; // Object
+		// 		gltf.scene.scale.set(90, 120, 70)
+		// 		gltf.scene.rotation.x -= 1.57
+		// 		gltf.scene.position.x = 15;
+		// 		gltf.scene.position.z = 926;
+		// 		gltf.scene.position.y = 5;
+
+		// 	},
+		// 	// called while loading is progressing
+		// 	function (xhr) {
+
+		// 		console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+		// 	},
+		// 	// called when loading has errors
+		// 	function (error) {
+
+		// 		console.log('An error happened');
+
+		// 	}
+		// );
+		// loader.load(
+		// 	// resource URL
+		// 	'/49236_49236/PERSP.glb',
+		// 	// called when the resource is loaded
+		// 	function (gltf) {
+
+		// 		scene.add(gltf.scene);
+
+		// 		gltf.animations; // Array<THREE.AnimationClip>
+		// 		gltf.scene; // THREE.Group
+		// 		gltf.scenes; // Array<THREE.Group>
+		// 		gltf.cameras; // Array<THREE.Camera>
+		// 		gltf.asset; // Object
+		// 		gltf.scene.scale.set(60, 50, 50)
+		// 		gltf.scene.rotation.x -= 1.57
+		// 		gltf.scene.position.z = 610;
+		// 		gltf.scene.position.y = 1000;
+		// 		gltf.scene.position.x = -150;
+		// 	},
+		// 	// called while loading is progressing
+		// 	function (xhr) {
+
+		// 		console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+		// 	},
+		// 	// called when loading has errors
+		// 	function (error) {
+
+		// 		console.log('An error happened');
+
+		// 	}
+		// );
+
+		// loader.load(
+		// 	// resource URL
+		// 	'/49237_Stalviršis_X101_Pr40mm/PERSP.glb',
+		// 	// called when the resource is loaded
+		// 	function (gltf) {
+
+		// 		scene.add(gltf.scene);
+
+		// 		gltf.animations; // Array<THREE.AnimationClip>
+		// 		gltf.scene; // THREE.Group
+		// 		gltf.scenes; // Array<THREE.Group>
+		// 		gltf.cameras; // Array<THREE.Camera>
+		// 		gltf.asset; // Object
+		// 		gltf.scene.scale.set(90, 90, 70)
+		// 		gltf.scene.rotation.x -= 1.57
+		// 		gltf.scene.position.x = -90;
+		// 		gltf.scene.position.z = 678;
+		// 		gltf.scene.position.y = 1000;
+		// 	},
+		// 	// called while loading is progressing
+		// 	function (xhr) {
+
+		// 		console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+		// 	},
+		// 	// called when loading has errors
+		// 	function (error) {
+
+		// 		console.log('An error happened');
+
+		// 	}
+		// );
+		// //uzdanga
+		// loader.load(
+		// 	// resource URL
+		// 	'/49240_49240/PERSP.glb',
+		// 	// called when the resource is loaded
+		// 	function (gltf) {
+
+		// 		scene.add(gltf.scene);
+
+		// 		gltf.animations; // Array<THREE.AnimationClip>
+		// 		gltf.scene; // THREE.Group
+		// 		gltf.scenes; // Array<THREE.Group>
+		// 		gltf.cameras; // Array<THREE.Camera>
+		// 		gltf.asset; // Object
+		// 		gltf.scene.scale.set(60, 50, 50)
+		// 		gltf.scene.rotation.x -= 1.57
+		// 		gltf.scene.position.z = 610;
+		// 		gltf.scene.position.y = 1000;
+		// 		gltf.scene.position.x = -400;
+		// 	},
+		// 	// called while loading is progressing
+		// 	function (xhr) {
+
+		// 		console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+		// 	},
+		// 	// called when loading has errors
+		// 	function (error) {
+
+		// 		console.log('An error happened');
+
+		// 	}
+		// );
+		// loader.load(
+		// 	// resource URL
+		// 	'/49242_Coffee cup/PERSP.glb',
+		// 	// called when the resource is loaded
+		// 	function (gltf) {
+
+		// 		scene.add(gltf.scene);
+
+		// 		gltf.animations; // Array<THREE.AnimationClip>
+		// 		gltf.scene; // THREE.Group
+		// 		gltf.scenes; // Array<THREE.Group>
+		// 		gltf.cameras; // Array<THREE.Camera>
+		// 		gltf.asset; // Object
+		// 		gltf.scene.scale.set(90, 120, 70)
+		// 		gltf.scene.rotation.x -= 1.57
+		// 		gltf.scene.position.x = -60;
+		// 		gltf.scene.position.z = 9;
+		// 		gltf.scene.position.y = 25;
+		// 	},
+		// 	// called while loading is progressing
+		// 	function (xhr) {
+
+		// 		console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+		// 	},
+		// 	// called when loading has errors
+		// 	function (error) {
+
+		// 		console.log('An error happened');
+
+		// 	}
+		// );
+		// //spintele grindu tuscias virsus melynas priekis
+		// loader.load(
+		// 	// resource URL
+		// 	'/49244_VAS_2X_BLUM/PERSP.glb',
+		// 	// called when the resource is loaded
+		// 	function (gltf) {
+
+		// 		scene.add(gltf.scene);
+
+		// 		gltf.animations; // Array<THREE.AnimationClip>
+		// 		gltf.scene; // THREE.Group
+		// 		gltf.scenes; // Array<THREE.Group>
+		// 		gltf.cameras; // Array<THREE.Camera>
+		// 		gltf.asset; // Object
+		// 		console.log("ASSETAS-------------------")
+		// 		console.log(gltf)
+		// 		gltf.scene.scale.set(85, 120, 70)
+		// 		gltf.scene.rotation.x -= 1.57
+		// 		gltf.scene.position.x = -555;
+		// 		gltf.scene.position.z = 715;
+		// 		gltf.scene.position.y = 0;
+		// 	},
+		// 	// called while loading is progressing
+		// 	function (xhr) {
+
+		// 		console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+		// 	},
+		// 	// called when loading has errors
+		// 	function (error) {
+
+		// 		console.log('An error happened');
+
+		// 	}
+		// );
+		// loader.load(
+		// 	// resource URL
+		// 	'/49248_Plintusas_1000_H_VAR/PERSP.glb',
+		// 	// called when the resource is loaded
+		// 	function (gltf) {
+
+		// 		scene.add(gltf.scene);
+
+		// 		gltf.animations; // Array<THREE.AnimationClip>
+		// 		gltf.scene; // THREE.Group
+		// 		gltf.scenes; // Array<THREE.Group>
+		// 		gltf.cameras; // Array<THREE.Camera>
+		// 		gltf.asset; // Object
+		// 		console.log("ASSETAS-------------------")
+		// 		console.log(gltf)
+		// 		gltf.scene.scale.set(70, 70, 70)
+		// 		gltf.scene.rotation.x -= 1.57
+		// 		gltf.scene.position.z = 610;
+		// 		gltf.scene.position.y = 1000;
+		// 		gltf.scene.position.x = -600;
+		// 	},
+		// 	// called while loading is progressing
+		// 	function (xhr) {
+
+		// 		console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+		// 	},
+		// 	// called when loading has errors
+		// 	function (error) {
+
+		// 		console.log('An error happened');
+
+		// 	}
+		// );
+		// loader.load(
+		// 	// resource URL
+		// 	'/49252_49252/PERSP.glb',
+		// 	// called when the resource is loaded
+		// 	function (gltf) {
+
+		// 		scene.add(gltf.scene);
+
+		// 		gltf.animations; // Array<THREE.AnimationClip>
+		// 		gltf.scene; // THREE.Group
+		// 		gltf.scenes; // Array<THREE.Group>
+		// 		gltf.cameras; // Array<THREE.Camera>
+		// 		gltf.asset; // Object
+		// 		console.log("ASSETAS-------------------")
+		// 		console.log(gltf.scene)
+		// 		gltf.scene.scale.set(70, 70, 70)
+		// 		gltf.scene.rotation.x -= 1.57
+		// 		gltf.scene.position.z = 610;
+		// 		gltf.scene.position.y = 1000;
+		// 		gltf.scene.position.x = -600;
+		// 	},
+		// 	// called while loading is progressing
+		// 	function (xhr) {
+
+		// 		console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+		// 	},
+		// 	// called when loading has errors
+		// 	function (error) {
+
+		// 		console.log('An error happened');
+
+		// 	}
+		// );
+		// //sienele prie saldytuvo
+		// loader.load(
+		// 	// resource URL
+		// 	'/49254_49254/PERSP.glb',
+		// 	// called when the resource is loaded
+		// 	function (gltf) {
+
+		// 		scene.add(gltf.scene);
+
+		// 		gltf.animations; // Array<THREE.AnimationClip>
+		// 		gltf.scene; // THREE.Group
+		// 		gltf.scenes; // Array<THREE.Group>
+		// 		gltf.cameras; // Array<THREE.Camera>
+		// 		gltf.asset; // Object
+		// 		console.log("ASSETAS-------------------")
+		// 		console.log(gltf)
+		// 		gltf.scene.scale.set(70, 70, 70)
+		// 		gltf.scene.rotation.x -= 1.579;
+		// 		gltf.scene.position.z = 610;
+		// 		gltf.scene.position.y = 1100;
+		// 		gltf.scene.position.x = -600;
+		// 	},
+		// 	// called while loading is progressing
+		// 	function (xhr) {
+
+		// 		console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+		// 	},
+		// 	// called when loading has errors
+		// 	function (error) {
+
+		// 		console.log('An error happened');
+
+		// 	}
+		// );
+		//LOADER------------------ END
+
+		var object;
+		let scene, camera, renderer, exporter, mesh;
+		const raycaster = new THREE.Raycaster();
+		const mouse = new THREE.Vector2();
+		const pointer = new THREE.Vector2();
+		init();
+		animate();
+
+
+		function init() {
+
+
+			camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 3000);
+			camera.position.set(150, 100, 400);
+
+			scene = new THREE.Scene();
+			scene.background = new THREE.Color(0xa0a0a0);
+
+
+			// exporter = new PLYExporter();
+
+			//
+
+			const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444);
+			hemiLight.position.set(0, 200, 0);
+			scene.add(hemiLight);
+
+			const directionalLight = new THREE.DirectionalLight(0xffffff);
+			directionalLight.position.set(0, 400, 0);
+			// directionalLight.castShadow = true;
+			// directionalLight.shadow.camera.top = 400;
+			// directionalLight.shadow.camera.bottom = -300;
+			// directionalLight.shadow.camera.left = 150;
+			// directionalLight.shadow.camera.right = 300;
+			scene.add(directionalLight);
+
+			// ground
+
+			const ground = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.MeshPhongMaterial({ color: 0x999999, depthWrite: false }));
+			ground.rotation.x = - Math.PI / 2;
+			ground.receiveShadow = true;
+			scene.add(ground);
+
+			const grid = new THREE.GridHelper(2000, 20, 0x000000, 0x000000);
+			grid.material.opacity = 0.2;
+			grid.material.transparent = true;
+			scene.add(grid);
+
+			// export mesh
+
+			const geometry = new THREE.BoxGeometry(50, 50, 50);
+			const loader = new THREE.CubeTextureLoader();
+
+			// loader.setPath( 'textures/');
+			// const cubeTexture = loader.load(['wood1.jpg','wood1.jpg','wood1.jpg','wood1.jpg','wood1.jpg','wood1.jpg'])
+
+
+			const texture = new THREE.TextureLoader().load("textures/wood1.jpg");
 
 
 
 
 
-				const material = new THREE.MeshFaceMaterial( { color: 0xffff00 } );
-				let edges = new THREE.EdgesGeometry( geometry );
-				let line = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: 0xffffff } ) );
-				let lineMat = new THREE.LineBasicMaterial( { color: 0x000000 } );
-				let points = [];
-				let lineBundle = new THREE.BufferGeometry().setFromPoints( points );
-				let line2 = new THREE.Line( lineBundle, lineMat );
-				//Kubai
 
-				// const geometry2 = new THREE.BoxGeometry( 50, 50, 50 );
-				// var cubeMaterials2=[
-				// 	new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
-				// 	new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
-				// 	new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
-				// 	new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
-				// 	new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
-				// 	new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
-				// ]
-				// const materialCube2 = new THREE.MeshFaceMaterial( cubeMaterials2 );
 
-				// mesh = new THREE.Mesh( geometry2, cubeMaterials2 );
-				// mesh.position.x = -250;
-				// mesh.castShadow = true;
-				// mesh.position.y = 30;
-				// scene.add(mesh)
+			const material = new THREE.MeshFaceMaterial({ color: 0xffff00 });
+			let edges = new THREE.EdgesGeometry(geometry);
+			let line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xffffff }));
+			let lineMat = new THREE.LineBasicMaterial({ color: 0x000000 });
+			let points = [];
+			let lineBundle = new THREE.BufferGeometry().setFromPoints(points);
+			let line2 = new THREE.Line(lineBundle, lineMat);
+			//Kubai
 
-				//Meterials
-				var cubeMaterials1=[
-					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
-					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
-					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
-					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
-					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
-					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
-				]
+			// const geometry2 = new THREE.BoxGeometry( 50, 50, 50 );
+			// var cubeMaterials2=[
+			// 	new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
+			// 	new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
+			// 	new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
+			// 	new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
+			// 	new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
+			// 	new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood1.jpg'),side: THREE.DoubleSide}),
+			// ]
+			// const materialCube2 = new THREE.MeshFaceMaterial( cubeMaterials2 );
 
-				var cubeMaterials2=[
-					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood2.jpg'),side: THREE.DoubleSide}),
-					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood2.jpg'),side: THREE.DoubleSide}),
-					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood2.jpg'),side: THREE.DoubleSide}),
-					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood2.jpg'),side: THREE.DoubleSide}),
-					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood2.jpg'),side: THREE.DoubleSide}),
-					new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/wood2.jpg'),side: THREE.DoubleSide}),
-				]
+			// mesh = new THREE.Mesh( geometry2, cubeMaterials2 );
+			// mesh.position.x = -250;
+			// mesh.castShadow = true;
+			// mesh.position.y = 30;
+			// scene.add(mesh)
 
-				var cubeMaterial3 = new THREE.MeshBasicMaterial({color: 0xffffff})
-				//Apatinės lentynos
+			//Meterials
+			var cubeMaterials1 = [
+				new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/wood1.jpg'), side: THREE.DoubleSide }),
+				new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/wood1.jpg'), side: THREE.DoubleSide }),
+				new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/wood1.jpg'), side: THREE.DoubleSide }),
+				new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/wood1.jpg'), side: THREE.DoubleSide }),
+				new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/wood1.jpg'), side: THREE.DoubleSide }),
+				new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/wood1.jpg'), side: THREE.DoubleSide }),
+			]
 
-				for (let h = 0; h <= 200; h=h+50)
-				{
-					
-				const materialCube = new THREE.MeshFaceMaterial( cubeMaterials1 );
+			var cubeMaterials2 = [
+				new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/wood2.jpg'), side: THREE.DoubleSide }),
+				new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/wood2.jpg'), side: THREE.DoubleSide }),
+				new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/wood2.jpg'), side: THREE.DoubleSide }),
+				new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/wood2.jpg'), side: THREE.DoubleSide }),
+				new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/wood2.jpg'), side: THREE.DoubleSide }),
+				new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/wood2.jpg'), side: THREE.DoubleSide }),
+			]
 
-					mesh = new THREE.Mesh( geometry.clone(), cubeMaterial3 );
-					mesh.material.transparent = true;
-					mesh.material.opacity = 0.4;
-					mesh.position.x = h;
-					mesh.castShadow = true;
-					mesh.position.y = 25;
-					scene.add( mesh );
-					edges = new THREE.EdgesGeometry( geometry );
-					line = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: 0x000000 } ) );
-					line.position.x= h;
-					line.position.y= 25;
-					scene.add( line );
-					points = [];
-					points.push( new THREE.Vector3( h-7, 25, 0 ) );
-					points.push( new THREE.Vector3( h+7, 25, 0 ) );
-					points.push( new THREE.Vector3( h, 25, 0 ) );
-					points.push( new THREE.Vector3( h, 32, 0 ) );
-					points.push( new THREE.Vector3( h, 18, 0 ) );
-					//points.push( new THREE.Vector3( h, 25, 0 ) );
-					//points.push( new THREE.Vector3( h, 25, 7 ) );
-					//points.push( new THREE.Vector3( h, 25, -7 ) );
-					lineBundle = new THREE.BufferGeometry().setFromPoints( points );
-					line2 = new THREE.Line( lineBundle, lineMat );
-					scene.add( line2 );
+			var cubeMaterial3 = new THREE.MeshBasicMaterial({ color: 0xffffff })
+			//Apatinės lentynos
 
-				}
-				//siena1
-				var meshsiena = new THREE.Mesh(  new THREE.BoxGeometry( 450, 300, 50 ), new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/siena.jfif'),side: THREE.DoubleSide}) );
+			for (let h = 0; h <= 200; h = h + 50) {
 
-				meshsiena.position.x = 50;
-				meshsiena.position.z= -50;
-				meshsiena.castShadow = true;
-				meshsiena.position.y = 25;
-				meshsiena.name = "siena"
-				scene.add( meshsiena );
+				const materialCube = new THREE.MeshFaceMaterial(cubeMaterials1);
 
-				meshsiena = new THREE.Mesh(  new THREE.BoxGeometry( 85, 300, 500 ), new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/siena.jfif'),side: THREE.DoubleSide}) );
-	
-				meshsiena.position.x = -70;
-				meshsiena.position.z= 0;
-				meshsiena.castShadow = true;
-				meshsiena.position.y = 25;
-				meshsiena.name="siena"
-				scene.add( meshsiena );
-				//lubos
-				meshsiena = new THREE.Mesh(  new THREE.BoxGeometry( 500, 0, 500 ), new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('textures/siena.jfif'),side: THREE.DoubleSide}) );
-	
-				meshsiena.position.x = 25;
-				meshsiena.position.z= 0;
-				meshsiena.castShadow = true;
-				meshsiena.position.y = 175;
-				meshsiena.name="siena"
-				scene.add( meshsiena );
-				//grindys
-				const textureFloor = new THREE.TextureLoader().load( "textures/floor.jpg" );
-				textureFloor.wrapS = THREE.RepeatWrapping;
-				textureFloor.wrapT = THREE.RepeatWrapping;
-				textureFloor.repeat.set( 10, 6 );
-				mesh = new THREE.Mesh(  new THREE.BoxGeometry( 550, 50, 550 ), new THREE.MeshBasicMaterial({map: textureFloor,side: THREE.DoubleSide}) );
-
-				mesh.name = "grindys"
-				mesh.position.x = 0;
-				mesh.position.z= 0;
+				mesh = new THREE.Mesh(geometry.clone(), cubeMaterial3);
+				mesh.material.transparent = true;
+				mesh.material.opacity = 0.4;
+				mesh.position.x = h;
 				mesh.castShadow = true;
-				mesh.position.y = -25;
-				scene.add( mesh );
-			
-  					var selectedObject;
+				mesh.position.y = 25;
+				scene.add(mesh);
+				edges = new THREE.EdgesGeometry(geometry);
+				line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000 }));
+				line.position.x = h;
+				line.position.y = 25;
+				scene.add(line);
+				points = [];
+				points.push(new THREE.Vector3(h - 7, 25, 0));
+				points.push(new THREE.Vector3(h + 7, 25, 0));
+				points.push(new THREE.Vector3(h, 25, 0));
+				points.push(new THREE.Vector3(h, 32, 0));
+				points.push(new THREE.Vector3(h, 18, 0));
+				//points.push( new THREE.Vector3( h, 25, 0 ) );
+				//points.push( new THREE.Vector3( h, 25, 7 ) );
+				//points.push( new THREE.Vector3( h, 25, -7 ) );
+				lineBundle = new THREE.BufferGeometry().setFromPoints(points);
+				line2 = new THREE.Line(lineBundle, lineMat);
+				scene.add(line2);
+
+			}
+			//siena1
+			var meshsiena = new THREE.Mesh(new THREE.BoxGeometry(450, 300, 50), new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/siena.jfif'), side: THREE.DoubleSide }));
+
+			meshsiena.position.x = 50;
+			meshsiena.position.z = -50;
+			meshsiena.castShadow = true;
+			meshsiena.position.y = 25;
+			meshsiena.name = "siena"
+			scene.add(meshsiena);
+
+			meshsiena = new THREE.Mesh(new THREE.BoxGeometry(85, 300, 500), new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/siena.jfif'), side: THREE.DoubleSide }));
+
+			meshsiena.position.x = -70;
+			meshsiena.position.z = 0;
+			meshsiena.castShadow = true;
+			meshsiena.position.y = 25;
+			meshsiena.name = "siena"
+			scene.add(meshsiena);
+
+			// lubos
+			meshsiena = new THREE.Mesh(new THREE.BoxGeometry(500, 0, 500), new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load('textures/siena.jfif'), side: THREE.DoubleSide }));
+
+			meshsiena.position.x = 25;
+			meshsiena.position.z = 0;
+			meshsiena.castShadow = true;
+			meshsiena.position.y = 175;
+			meshsiena.name = "siena"
+			scene.add(meshsiena);
+
+			// grindys
+			const textureFloor = new THREE.TextureLoader().load("textures/floor.jpg");
+			textureFloor.wrapS = THREE.RepeatWrapping;
+			textureFloor.wrapT = THREE.RepeatWrapping;
+			textureFloor.repeat.set(10, 6);
+			mesh = new THREE.Mesh(new THREE.BoxGeometry(550, 50, 550), new THREE.MeshBasicMaterial({ map: textureFloor, side: THREE.DoubleSide }));
+
+			mesh.name = "grindys"
+			mesh.position.x = 0;
+			mesh.position.z = 0;
+			mesh.castShadow = true;
+			mesh.position.y = -25;
+			scene.add(mesh);
+
+			var selectedObject;
 
 
-			
 
 
-				const geometry1 = new THREE.BoxGeometry( 50, 100, 50 );
-				
-				const material1 = new THREE.MeshPhongMaterial( { color: 0x00ff00 } );
+
+			const geometry1 = new THREE.BoxGeometry(50, 100, 50);
+
+			const material1 = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
 
 
-				//Šaldytuvas
-				edges = new THREE.EdgesGeometry( geometry1 );
-				line = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: 0x000000 } ) );
-				line.position.x= 250;
-				line.position.y= 50;
-				scene.add( line );
+			//Šaldytuvas
+			edges = new THREE.EdgesGeometry(geometry1);
+			line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000 }));
+			line.position.x = 250;
+			line.position.y = 50;
+			scene.add(line);
 
-				
-				//Viršutinės lentynos
-				for (let h = 0; h < 250; h=h+50)
-				{
-					mesh = new THREE.Mesh( geometry, cubeMaterial3 );
-					mesh.position.x = h;
-					mesh.castShadow = true;
-					mesh.position.y = 125;
-					scene.add( mesh );
-					edges = new THREE.EdgesGeometry( geometry );
-					line = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: 0x000000 } ) );
-					line.position.x= h;
-					line.position.y= 125;
-					scene.add( line );
-					points = [];
-					points.push( new THREE.Vector3( h-7, 125, 0 ) );
-					points.push( new THREE.Vector3( h+7, 125, 0 ) );
-					points.push( new THREE.Vector3( h, 125, 0 ) );
-					points.push( new THREE.Vector3( h, 132, 0 ) );
-					points.push( new THREE.Vector3( h, 118, 0 ) );
-					//points.push( new THREE.Vector3( h, 25, 0 ) );
-					//points.push( new THREE.Vector3( h, 25, 7 ) );
-					//points.push( new THREE.Vector3( h, 25, -7 ) );
-					lineBundle = new THREE.BufferGeometry().setFromPoints( points );
-					line2 = new THREE.Line( lineBundle, lineMat );
-					scene.add( line2 );
-				}
-				
+
+			//Viršutinės lentynos
+			for (let h = 0; h < 250; h = h + 50) {
+				mesh = new THREE.Mesh(geometry, cubeMaterial3);
+				mesh.position.x = h;
+				mesh.castShadow = true;
+				mesh.position.y = 125;
+				scene.add(mesh);
+				edges = new THREE.EdgesGeometry(geometry);
+				line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000 }));
+				line.position.x = h;
+				line.position.y = 125;
+				scene.add(line);
+				points = [];
+				points.push(new THREE.Vector3(h - 7, 125, 0));
+				points.push(new THREE.Vector3(h + 7, 125, 0));
+				points.push(new THREE.Vector3(h, 125, 0));
+				points.push(new THREE.Vector3(h, 132, 0));
+				points.push(new THREE.Vector3(h, 118, 0));
+				//points.push( new THREE.Vector3( h, 25, 0 ) );
+				//points.push( new THREE.Vector3( h, 25, 7 ) );
+				//points.push( new THREE.Vector3( h, 25, -7 ) );
+				lineBundle = new THREE.BufferGeometry().setFromPoints(points);
+				line2 = new THREE.Line(lineBundle, lineMat);
+				scene.add(line2);
+			}
 
 
 
 
-				function onPointerMove( event ) { // ONCLICKAS
+			let lastintersect;
+			function onPointerMove(event) { // ONCLICKAS
 
 				//const materialCube = new THREE.MeshFaceMaterial( cubeMaterials );
 
-					raycaster.setFromCamera( mouse, camera );
+				raycaster.setFromCamera(mouse, camera);
 
-					// calculate objects intersecting the picking ray
-					const intersects = raycaster.intersectObjects( scene.children );
+				// calculate objects intersecting the picking ray
+				const intersects = raycaster.intersectObjects(scene.children);
 
-					//for ( let i = 0; i <script intersects.length; i ++ ) {
-						var element = document.getElementById("result")
-						console.log(intersects)
-						if (intersects[0].object.name != "siena" && intersects[0].object.name != "grindys")
+				//for ( let i = 0; i <script intersects.length; i ++ ) {
+				var element = document.getElementById("result")
+				console.log(intersects)
+				intersects.forEach(element => {
 
-				{
 
-						if(intersects[0].object.id!=10){
-						
-						try{var array = intersects[ 0 ].object.material[0].map.image.src.split('/');
 
-						array = array[array.length-1];
-						
-						object = intersects[ 0 ].object;
-						selectedObject = object.id;
-						console.log(object.id)
-						element.textContent = array.substring(0, array.length-4);
-						if (array.substring(0, array.length-4) != " "){
-							document.getElementById('inputSelect').value = array.substring(0, array.length-4);
-						}
-						
-						}
 
-						catch(e) {
-							object = intersects[ 0 ].object;
-							selectedObject = object.id;
-							document.getElementById('inputSelect').value = "nothing";
-						}
+					if (object_list.some(e => e.name === element.object.name)) {
+						/* vendors contains the element we're looking for */
+
+						if (intersects[0].object.name != "siena" && intersects[0].object.name != "grindys") {
+
+							if (intersects[0].object.id != 10) {
+
+								try {
+
+									object = element.object;
+									selectedObject = element.object.id;
+
+
+
+									lastintersect = intersects[0].point
+									console.log(lastintersect)
+									document.getElementById('inputSelect').value = element.object.name
+
+
+								}
+
+								catch (e) {
+									console.log(e)
+									object = intersects[0].object;
+									selectedObject = object.id;
+									document.getElementById('inputSelect').value = "nothing";
+								}
+							}
 						}
 					}
-						// e.color.set( 0xff0000 )
+				})
+				// e.color.set( 0xff0000 )
 
-						// e.map.image.src = "http://127.0.0.1:5500/three.js/examples/textures/wood2.jpg"
-						// e.map.image.currentSrc = "http://127.0.0.1:5500/three.js/examples/textures/wood2.jpg"
-						
-						
-						
-						// 
-
-					//}
-				pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-				pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-
-				}
-			
-				renderer = new THREE.WebGLRenderer( { antialias: true } );
-				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-				renderer.shadowMap.enabled = true;
-				document.body.appendChild( renderer.domElement );
-
-				//
-
-				const controls = new OrbitControls( camera, renderer.domElement );
-				controls.target.set( 0, 25, 0 );
-				controls.update();
-
-				//
-
-				//STATS
-				//Events
-				var clearX = document.getElementById("clearMat");
-				clearX.addEventListener( 'click', clearMat );
-				document.addEventListener( 'click', onPointerMove );
-				window.addEventListener( 'resize', onWindowResize );
-				//OnChange eventas
-				const selectElement = document.querySelector('.inputSelect');
-
-				function clearMat( event ) {
-				var objektas = scene.getObjectById(selectedObject,true);
-				mesh = new THREE.Mesh( geometry, cubeMaterial3 );
-				mesh.position.set(objektas.position.x, objektas.position.y, objektas.position.z)
-				//copy geo
-				scene.remove(objektas)
-				scene.add( mesh );
-				selectedObject = mesh.id;
-				render()
-				}
+				// e.map.image.src = "http://127.0.0.1:5500/three.js/examples/textures/wood2.jpg"
+				// e.map.image.currentSrc = "http://127.0.0.1:5500/three.js/examples/textures/wood2.jpg"
 
 
-				selectElement.addEventListener('change', (event) => {
-				
-				var objektas = scene.getObjectById(selectedObject,true);
-				
-				const geometry1 = new THREE.BoxGeometry( 50,50,50 );
-				if (objektas.name != "siena" && objektas.name != "grindys")
-				{
-				
-			
-				if(event.target.value=="wood1") {
-				console.log(objektas)
-				mesh = new THREE.Mesh( geometry1, cubeMaterials1 );
-				mesh.position.set(objektas.position.x, objektas.position.y, objektas.position.z)
-				//copy geo
 
-				scene.remove(objektas)
-				scene.add( mesh );
-				selectedObject = mesh.id;
-				render()
-				}
-				else if(event.target.value=="wood2") {
-				mesh = new THREE.Mesh( geometry1, cubeMaterials2 );
-				mesh.position.set(objektas.position.x, objektas.position.y, objektas.position.z)
-				//copy geo
-				scene.remove(objektas)
-				scene.add( mesh );
-				selectedObject = mesh.id;
-				render()
-				}
+				// 
+
+				//}
+				pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+				pointer.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
 			}
+
+			renderer = new THREE.WebGLRenderer({ antialias: true });
+			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.shadowMap.enabled = true;
+			document.body.appendChild(renderer.domElement);
+
+			//
+
+			const controls = new OrbitControls(camera, renderer.domElement);
+			controls.target.set(20, 10, -500);
+			controls.update();
+
+			//
+
+			//STATS
+			//Events
+			var clearX = document.getElementById("clearMat");
+			clearX.addEventListener('click', clearMat);
+			document.addEventListener('click', onPointerMove);
+			window.addEventListener('resize', onWindowResize);
+			//OnChange eventas
+			const selectElement = document.querySelector('.inputSelect');
+			const selectElementMaterial = document.getElementById('inputSelectMaterial');
+			function clearMat(event) {
+				var objektas = scene.getObjectById(selectedObject, true);
+				mesh = new THREE.Mesh(geometry, cubeMaterial3);
+				mesh.position.set(objektas.position.x, objektas.position.y, objektas.position.z)
+				//copy geo
+				scene.remove(objektas)
+				scene.add(mesh);
+				selectedObject = mesh.id;
+				render()
+			}
+
+			selectElementMaterial.addEventListener('change', (event) => {
+
+				const geometry1 = new THREE.BoxGeometry(50, 50, 50);
+				if (objektas.name != "siena" && objektas.name != "grindys" && object_list.includes(objektas.name)) {
+					console.log(objektas.name)
+
+					if (event.target.value == "wood1") {
+						console.log(objektas)
+						// mesh = new THREE.Mesh(geometry1, cubeMaterials1);
+						// mesh.position.set(objektas.position.x, objektas.position.y, objektas.position.z)
+						//copy geo
+						const loader = new GLTFLoader();
+						const dracoLoader = new DRACOLoader();
+						dracoLoader.setDecoderPath('/examples/js/libs/draco/');
+						loader.setDRACOLoader(dracoLoader);
+						var location = "/49244_VAS_2X_BLUM/PERSP.glb"
+						loader.load(
+							// resource URL
+							location,
+							// called when the resource is loaded
+							function (gltf) {
+
+
+								scene.add(gltf.scene);
+
+								gltf.animations; // Array<THREE.AnimationClip>
+								gltf.scene; // THREE.Group
+								gltf.scenes; // Array<THREE.Group>
+								gltf.cameras; // Array<THREE.Camera>
+								gltf.asset; // Object
+								console.log("ASSETAS-------------------")
+								console.log(gltf)
+								gltf.scene.scale.set(85, 120, 70)
+								gltf.scene.rotation.x -= 1.57
+								gltf.scene.position.set(objektas.position.x - 706, objektas.position.y - 25, objektas.position.z + 715)
+
+								render()
+							},
+							// called while loading is progressing
+							function (xhr) {
+
+								console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+							},
+							// called when loading has errors
+							function (error) {
+
+								console.log('An error happened');
+
+							}
+						);
+						// scene.remove(objektas)
+						// scene.add(mesh);
+						// selectedObject = mesh.id;
+
+					}
+					else if (event.target.value == "Materija 2") {
+						mesh = new THREE.Mesh(geometry1, cubeMaterials2);
+						mesh.position.set(objektas.position.x, objektas.position.y, objektas.position.z)
+						//copy geo
+						scene.remove(objektas)
+						scene.add(mesh);
+						selectedObject = mesh.id;
+						render()
+					}
+				}
+
+			})
+			selectElement.addEventListener('change', (event) => {
+
+				var objektas = scene.getObjectById(selectedObject, true);
+				var GroupScene = scene.getObjectByName('Scene', true);
+
+				object_list.forEach(element => {
+					// console.log(element.name + "   " + event.target.value)
+					if (element.name == event.target.value) {
+						var mesh = new THREE.Mesh(element.geometry, element.material)
+						// console.log(objektas)
+						// var testlemenet = element.clone()
+						// console.log(testlemenet)
+
+						const geometry = new THREE.BoxGeometry(1, 1, 1);
+						const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+						const cube = new THREE.Mesh(geometry, material);
+						// cube.position.set(objektas.position.getWorldPosition())
+
+						objektas.geometry = geometry
+						cube.position.set(intersects[0].points)
+						GroupScene.children[0].add(cube);
+						console.log(objektas)
+						console.log(cube)
+						mesh.name = element.name
+
+						mesh.children = element.children
+						mesh.scale.set(90, 100, 70)
+
+
+
+						GroupScene.children[0].remove(objektas)
+
+						// console.log(testlemenet)
+						// object.material.opacity = 0.2
+						// object.material.color = { r: 255, g: 0, b: 255 }
+						// object.material.trasnsparent = true
+
+
+
+
+
+						render()
+
+
+					}
+				})
+
+
+
 				//const result = document.querySelector('.result');
 				//result.textContent = event.target.value;
-			
-				});
-				
-				// const buttonExportASCII = document.getElementById( 'exportASCII' );
-				// buttonExportASCII.addEventListener( 'click', exportASCII );
 
-				// const buttonExportBinaryBE = document.getElementById( 'exportBinaryBigEndian' );
-				// buttonExportBinaryBE.addEventListener( 'click', exportBinaryBigEndian );
+			});
 
-				// const buttonExportBinaryLE = document.getElementById( 'exportBinaryLittleEndian' );
-				// buttonExportBinaryLE.addEventListener( 'click', exportBinaryLittleEndian );
+			// const buttonExportASCII = document.getElementById( 'exportASCII' );
+			// buttonExportASCII.addEventListener( 'click', exportASCII );
 
+			// const buttonExportBinaryBE = document.getElementById( 'exportBinaryBigEndian' );
+			// buttonExportBinaryBE.addEventListener( 'click', exportBinaryBigEndian );
 
-			}
-			
-				
-				//
+			// const buttonExportBinaryLE = document.getElementById( 'exportBinaryLittleEndian' );
+			// buttonExportBinaryLE.addEventListener( 'click', exportBinaryLittleEndian );
 
 
-			
+		}
 
-			function onWindowResize() {
 
-				camera.aspect = window.innerWidth / window.innerHeight;
-				camera.updateProjectionMatrix();
-
-				renderer.setSize( window.innerWidth, window.innerHeight );
-
-			
-			}
-
-			function onMouseMove( event ) {
-
-				// calculate mouse position in normalized device coordinates
-				// (-1 to +1) for both components
-
-				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-
-				}
-
-			window.addEventListener( 'mousemove', onMouseMove, false );
-
-			
-			function animate() {
-
-				requestAnimationFrame( animate );
-				
-				render()
-			}
+		//
 
 
 
 
-			function render(){
-				
-				
+		function onWindowResize() {
 
-				renderer.render( scene, camera );
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
 
-				// raycaster.setFromCamera( pointer, camera );
-				// const intersects = raycaster.intersectObjects( scene.children, false );
-				// let INTERSECTED;
-				
-				// if ( intersects.length > 0 ) {
+			renderer.setSize(window.innerWidth, window.innerHeight);
 
-				// 	if ( INTERSECTED != intersects[ 0 ].object ) {
 
-				// 		if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+		}
 
-				// 		INTERSECTED = intersects[ 0 ].object;
-				// 		// INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
-				// 		//INTERSECTED.material.color.setHex( 0xffff00 );
+		function onMouseMove(event) {
 
-				// 	}
+			// calculate mouse position in normalized device coordinates
+			// (-1 to +1) for both components
 
-				// } else {
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
-				// 	if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+		}
 
-				// 	INTERSECTED = null;
+		window.addEventListener('mousemove', onMouseMove, false);
 
-				// }
-				renderer.render( scene, camera );
-			}
 
-			function exportASCII() {
+		function animate() {
 
-				exporter.parse( mesh, function ( result ) {
+			requestAnimationFrame(animate);
 
-					saveString( result, 'box.ply' );
+			render()
+		}
 
-				} );
 
-			}
 
-			function exportBinaryBigEndian() {
 
-				exporter.parse( mesh, function ( result ) {
+		function render() {
 
-					saveArrayBuffer( result, 'box.ply' );
 
-				}, { binary: true } );
 
-			}
+			renderer.render(scene, camera);
 
-			function exportBinaryLittleEndian() {
+			// raycaster.setFromCamera( pointer, camera );
+			// const intersects = raycaster.intersectObjects( scene.children, false );
+			// let INTERSECTED;
 
-				exporter.parse( mesh, function ( result ) {
+			// if ( intersects.length > 0 ) {
 
-					saveArrayBuffer( result, 'box.ply' );
+			// 	if ( INTERSECTED != intersects[ 0 ].object ) {
 
-				}, { binary: true, littleEndian: true } );
+			// 		if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
 
-			}
+			// 		INTERSECTED = intersects[ 0 ].object;
+			// 		// INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+			// 		//INTERSECTED.material.color.setHex( 0xffff00 );
 
-			const link = document.createElement( 'a' );
-			link.style.display = 'none';
-			document.body.appendChild( link );
+			// 	}
 
-			function save( blob, filename ) {
+			// } else {
 
-				link.href = URL.createObjectURL( blob );
-				link.download = filename;
-				link.click();
+			// 	if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
 
-			}
+			// 	INTERSECTED = null;
 
-			function saveString( text, filename ) {
+			// }
+			renderer.render(scene, camera);
+		}
 
-				save( new Blob( [ text ], { type: 'text/plain' } ), filename );
+		function exportASCII() {
 
-			}
+			exporter.parse(mesh, function (result) {
 
-			function saveArrayBuffer( buffer, filename ) {
+				saveString(result, 'box.ply');
 
-				save( new Blob( [ buffer ], { type: 'application/octet-stream' } ), filename );
+			});
 
-			}
-			
-		</script>
+		}
 
-	</body>
+		function exportBinaryBigEndian() {
+
+			exporter.parse(mesh, function (result) {
+
+				saveArrayBuffer(result, 'box.ply');
+
+			}, { binary: true });
+
+		}
+
+		function exportBinaryLittleEndian() {
+
+			exporter.parse(mesh, function (result) {
+
+				saveArrayBuffer(result, 'box.ply');
+
+			}, { binary: true, littleEndian: true });
+
+		}
+
+		const link = document.createElement('a');
+		link.style.display = 'none';
+		document.body.appendChild(link);
+
+		function save(blob, filename) {
+
+			link.href = URL.createObjectURL(blob);
+			link.download = filename;
+			link.click();
+
+		}
+
+		function saveString(text, filename) {
+
+			save(new Blob([text], { type: 'text/plain' }), filename);
+
+		}
+
+		function saveArrayBuffer(buffer, filename) {
+
+			save(new Blob([buffer], { type: 'application/octet-stream' }), filename);
+
+		}
+
+	</script>
+
+</body>
+
 </html>

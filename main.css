@@ -1,13 +1,33 @@
 body {
 	margin: 0;
-	background-color: #000;
+
 	color: #fff;
 	font-family: Monospace;
 	font-size: 13px;
 	line-height: 24px;
 	overscroll-behavior: none;
+	overflow-y:hidden;
+}
+.header{
+	padding: 20px 20px;
+	height: 60px;
+	background-color: white;
+	border-bottom: 1px solid #ABABAB;
+	padding-bottom:0px;
 }
 
+
+.imageHeader{
+	
+	margin-left:80px;
+	
+	background-image: url("./logo-top.png");
+	height:40px;
+	width:200px;
+	background-size: contain;
+	background-repeat: no-repeat;
+	
+}
 a {
 	color: #ff0;
 	text-decoration: none;
@@ -86,20 +106,49 @@ a, button, input, select {
 .onTop{
 	position: absolute;
 	left: 2%;
-	top: 3%;
+	top: 12.5%;
 	background-color: white;
 	z-index:50;
-	width: 300px;
-	height: 350px;
+	width: 20%;
+	height: 80%;
 	border: 1px solid #EBEBEB;
 	border-radius:12px;
-	padding: 40px 40px 0px;
+	padding: 0px 40px 0px;
 }
 .inputSelect{
 	height:32px;
 	width: 80%;
-	border-radius:10px;
-	color: gray;
+	border: 1px solid #0B385B;
+	box-sizing: border-box;
+	border-radius: 78px;
+}
+.inputSelect:first-child{
+	border: 1px solid #0B385B;
+	box-sizing: border-box;
+	border-radius: 78px;
 }
 
+.lenteleHead{
+	height:8%;
+	border-bottom: 1px solid #ABABAB;
+	margin-bottom:12px;
 
+}
+.lenteleHeadtext{
+	font-family: Inter;
+	font-style: normal;
+	font-weight: 600;
+	font-size: 16px;
+	line-height: 15px;
+/* identical to box height */
+
+
+/* Gray 3 */
+
+color: #828282;
+}
+
+select {
+    font-size: 2em;
+    font-size-adjust: 0.3;
+}
